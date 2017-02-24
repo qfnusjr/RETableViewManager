@@ -59,7 +59,9 @@
                           rightSegmentState:UIControlStateNormal
                                  barMetrics:UIBarMetricsDefault];
 
+#if 0
     [self.navigationControl setBackgroundImage:[UIImage imageNamed:@"Transparent" inBundle:[NSBundle RETableViewManagerBundle] compatibleWithTraitCollection:nil] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+#endif
     [self.navigationControl setWidth:40.0f forSegmentAtIndex:0];
     [self.navigationControl setWidth:40.0f forSegmentAtIndex:1];
     [self.navigationControl setContentOffset:CGSizeMake(-4, 0) forSegmentAtIndex:0];
