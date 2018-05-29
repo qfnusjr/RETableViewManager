@@ -675,6 +675,24 @@
     return NSLocalizedString(@"Delete", @"Delete");
 }
 
+- (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    RETableViewSection *section = self.mutableSections[indexPath.section];
+    id item = section.items[indexPath.row];
+    if ([item isKindOfClass:[RETableViewItem class]]) {
+        RETableViewItem *editItem = (RETableViewItem *)item;
+        if (editItem.editActionsHandler)
+            return editItem.editActionsHandler(item);
+    }
+    
+    // Forward to UITableView delegate
+    //
+    if ([self.delegate conformsToProtocol:@protocol(UITableViewDelegate)] && [self.delegate respondsToSelector:@selector(tableView:editActionsForRowAtIndexPath:)])
+        return [self.delegate tableView:tableView editActionsForRowAtIndexPath:indexPath];
+    
+    return nil;
+}
+
 - (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath
 {
     // Forward to UITableView delegate

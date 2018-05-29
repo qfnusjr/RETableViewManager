@@ -53,6 +53,7 @@
 @property (copy, readwrite, nonatomic) void (^cutHandler)(id item);
 @property (copy, readwrite, nonatomic) void (^copyHandler)(id item);
 @property (copy, readwrite, nonatomic) void (^pasteHandler)(id item);
+@property (copy, readwrite, nonatomic) NSArray<UITableViewRowAction *> *(^editActionsHandler)(id item);
 @property (assign, readwrite, nonatomic) CGFloat cellHeight;
 @property (copy, readwrite, nonatomic) NSString *cellIdentifier;
 
