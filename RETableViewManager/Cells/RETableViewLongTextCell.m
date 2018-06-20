@@ -59,7 +59,6 @@
     
     self.textView = [[REPlaceholderTextView alloc] init];
     self.textView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.textView.inputAccessoryView = self.actionBar;
     self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.textView.backgroundColor = [UIColor clearColor];
     self.textView.delegate = self;
@@ -103,6 +102,7 @@
     self.textView.returnKeyType = self.item.returnKeyType;
     self.textView.enablesReturnKeyAutomatically = self.item.enablesReturnKeyAutomatically;
     self.textView.secureTextEntry = self.item.secureTextEntry;
+    self.textView.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
     [self.textView setNeedsDisplay];
     
     self.actionBar.barStyle = self.item.keyboardAppearance == UIKeyboardAppearanceAlert ? UIBarStyleBlack : UIBarStyleDefault;
