@@ -1,5 +1,5 @@
 //
-// RETableViewDateTimeCell.m
+// RETableViewPickerCell.m
 // RETableViewManager
 //
 // Copyright (c) 2013 Roman Efimov (https://github.com/romaonthego)
@@ -22,30 +22,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-#import "RETableViewDateTimeCell.h"
+
+#import "RETableViewPickerCell.h"
 #import "RETableViewManager.h"
 #import "NSString+RETableViewManagerAdditions.h"
 
-@interface RETableViewDateTimeCell ()
+@interface RETableViewPickerCell ()
 
 @property (strong, readwrite, nonatomic) UITextField *textField;
-@property (strong, readwrite, nonatomic) UILabel *dateLabel;
+@property (strong, readwrite, nonatomic) UILabel *valueLabel;
 @property (strong, readwrite, nonatomic) UILabel *placeholderLabel;
-@property (strong, readwrite, nonatomic) UIDatePicker *datePicker;
-@property (strong, readwrite, nonatomic) NSDateFormatter *dateFormatter;
+@property (strong, readwrite, nonatomic) UIPickerView *pickerView;
 
 @property (assign, readwrite, nonatomic) BOOL enabled;
 
 @end
 
-@implementation RETableViewDateTimeCell
-
-+ (BOOL)canFocusWithItem:(REDateTimeItem *)item
-{
-    return !item.inlineDatePicker;
-}
+@implementation RETableViewPickerCell
 
 @synthesize item = _item;
+
++ (BOOL)canFocusWithItem:(REPickerItem *)item
+{
+    return !item.inlinePicker;
+}
 
 #pragma mark -
 #pragma mark Lifecycle
@@ -63,18 +63,17 @@
     
     self.textField = [[UITextField alloc] initWithFrame:CGRectZero];
     self.textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    self.textField.inputAccessoryView = self.actionBar;
     self.textField.delegate = self;
     [self addSubview:self.textField];
     
-    self.dateLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    self.dateLabel.font = [UIFont systemFontOfSize:17];
-    self.dateLabel.backgroundColor = [UIColor clearColor];
-    self.dateLabel.textColor = [[self class] detailTextLabelColor];
-    self.dateLabel.highlightedTextColor = [UIColor whiteColor];
-    self.dateLabel.textAlignment = NSTextAlignmentRight;
-    self.dateLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [self.contentView addSubview:self.dateLabel];
+    self.valueLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.valueLabel.font = [UIFont systemFontOfSize:17];
+    self.valueLabel.backgroundColor = [UIColor clearColor];
+    self.valueLabel.textColor = self.detailTextLabel.textColor;
+    self.valueLabel.highlightedTextColor = [UIColor whiteColor];
+    self.valueLabel.textAlignment = NSTextAlignmentRight;
+    self.valueLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [self.contentView addSubview:self.valueLabel];
     
     self.placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     self.placeholderLabel.font = [UIFont systemFontOfSize:17];
@@ -83,40 +82,31 @@
     self.placeholderLabel.highlightedTextColor = [UIColor whiteColor];
     [self.contentView addSubview:self.placeholderLabel];
     
-    self.dateFormatter = [[NSDateFormatter alloc] init];
-    
-    self.datePicker = [[UIDatePicker alloc] init];
-    [self.datePicker addTarget:self action:@selector(datePickerValueDidChange:) forControlEvents:UIControlEventValueChanged];
+    self.pickerView = [[UIPickerView alloc] init];
+    self.pickerView.delegate = self;
+    self.pickerView.dataSource = self;
 }
 
 - (void)cellWillAppear
 {
     self.textLabel.text = self.item.title.length == 0 ? @" " : self.item.title;
-    self.textField.inputView = self.datePicker;
-    self.datePicker.date = self.item.value ? self.item.value : (self.item.pickerStartDate ? self.item.pickerStartDate : [NSDate date]);
-    self.datePicker.datePickerMode = self.item.datePickerMode;
-    self.datePicker.locale = self.item.locale;
-    self.datePicker.calendar = self.item.calendar;
-    self.datePicker.timeZone = self.item.timeZone;
-    self.datePicker.minimumDate = self.item.minimumDate;
-    self.datePicker.maximumDate = self.item.maximumDate;
-    self.datePicker.minuteInterval = self.item.minuteInterval;
-    self.dateFormatter.dateFormat = self.item.format;
-    self.dateFormatter.calendar = self.item.calendar;
-    self.dateFormatter.timeZone = self.item.timeZone;
-    self.dateFormatter.locale = self.item.locale;
-    self.dateLabel.text = self.item.value ? [self.dateFormatter stringFromDate:self.item.value] : @"";
+    self.imageView.image = self.item.image;
+    self.imageView.highlightedImage = self.item.highlightedImage;
+    self.textField.inputView = self.pickerView;
+    
+    self.valueLabel.text = self.item.value ? [self.item.value componentsJoinedByString:@", "] : @"";
     self.placeholderLabel.text = self.item.placeholder;
-    self.placeholderLabel.hidden = self.dateLabel.text.length > 0;
-    
-    if (!self.item.title) {
-        self.dateLabel.textAlignment = NSTextAlignmentLeft;
-    }
-    
-    if ([self respondsToSelector:@selector(tintColor)]) {
-        self.dateLabel.textColor = self.item.inlinePickerItem ? [self tintColor] : [[self class] detailTextLabelColor];
-    }
+    self.placeholderLabel.hidden = self.valueLabel.text.length > 0;
+    self.textField.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
 
+    if (!self.item.title) {
+        self.valueLabel.textAlignment = NSTextAlignmentLeft;
+    }
+    
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 70000
+    self.valueLabel.textColor = self.item.inlinePickerItem ? [self performSelector:@selector(tintColor) withObject:nil] : self.detailTextLabel.textColor;
+#endif
+    
     self.enabled = self.item.enabled;
 }
 
@@ -126,7 +116,7 @@
     self.textField.frame = CGRectZero;
     self.textField.alpha = 0;
     
-    [self layoutDetailView:self.dateLabel minimumWidth:[self.dateLabel.text re_sizeWithFont:self.dateLabel.font].width];
+    [self layoutDetailView:self.valueLabel minimumWidth:[self.valueLabel.text re_sizeWithFont:self.valueLabel.font].width];
     [self layoutDetailView:self.placeholderLabel minimumWidth:[self.placeholderLabel.text re_sizeWithFont:self.placeholderLabel.font].width];
     
     if ([self.tableViewManager.delegate respondsToSelector:@selector(tableView:willLayoutCellSubviews:forRowAtIndexPath:)])
@@ -137,24 +127,28 @@
 {
     [super setSelected:selected animated:animated];
     
-    if (selected && !self.item.inlineDatePicker) {
+    if (selected && !self.item.inlinePicker) {
         [self.textField becomeFirstResponder];
+        [self.item.options enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if (self.item.options[idx] && self.item.value[idx] > 0)
+                [self.pickerView selectRow:[self.item.options[idx] indexOfObject:self.item.value[idx]] inComponent:idx animated:NO];
+        }];
     }
     
-    if (selected && self.item.inlineDatePicker && !self.item.inlinePickerItem) {
+    if (selected && self.item.inlinePicker && !self.item.inlinePickerItem) {
         [self setSelected:NO animated:NO];
         [self.item deselectRowAnimated:NO];
-        if ([self respondsToSelector:@selector(tintColor)]) {
-            self.dateLabel.textColor = [self tintColor];
-        }
-        self.item.inlinePickerItem = [REInlineDatePickerItem itemWithDateTimeItem:self.item];
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 70000
+        self.valueLabel.textColor = [self performSelector:@selector(tintColor) withObject:nil];
+#endif
+        self.item.inlinePickerItem = [REInlinePickerItem itemWithPickerItem:self.item];
         [self.section insertItem:self.item.inlinePickerItem atIndex:self.item.indexPath.row + 1];
         [self.tableViewManager.tableView insertRowsAtIndexPaths:@[self.item.inlinePickerItem.indexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else {
-        if (selected && self.item.inlineDatePicker && self.item.inlinePickerItem) {
+        if (selected && self.item.inlinePicker && self.item.inlinePickerItem) {
             [self setSelected:NO animated:NO];
             [self.item deselectRowAnimated:NO];
-            self.dateLabel.textColor = [[self class] detailTextLabelColor];
+            self.valueLabel.textColor = self.detailTextLabel.textColor;
             NSIndexPath *indexPath = [self.item.inlinePickerItem.indexPath copy];
             [self.section removeItemAtIndex:self.item.inlinePickerItem.indexPath.row];
             self.item.inlinePickerItem = nil;
@@ -163,20 +157,28 @@
     }
 }
 
-//! HACK
-+ (UIColor *)detailTextLabelColor {
-    return [UIColor colorWithRed:0.556863 green:0.556863 blue:0.576471 alpha:1];
-}
-
 - (UIResponder *)responder
 {
     return self.textField;
 }
 
+- (void)shouldUpdateItemValue
+{
+    NSMutableArray *value = [NSMutableArray array];
+    [self.item.options enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSArray *options = self.item.options[idx];
+        NSString *valueText = [options objectAtIndex:[self.pickerView selectedRowInComponent:idx]];
+        [value addObject:valueText];
+    }];
+    self.item.value = [value copy];
+    self.valueLabel.text = self.item.value ? [self.item.value componentsJoinedByString:@", "] : @"";
+    self.placeholderLabel.hidden = self.valueLabel.text.length > 0;
+}
+
 #pragma mark -
 #pragma mark Handle state
 
-- (void)setItem:(REDateTimeItem *)item
+- (void)setItem:(REPickerItem *)item
 {
     if (_item != nil) {
         [_item removeObserver:self forKeyPath:@"enabled"];
@@ -194,14 +196,14 @@
     
     self.textLabel.enabled = _enabled;
     self.textField.enabled = _enabled;
-    self.dateLabel.enabled = _enabled;
+    self.valueLabel.enabled = _enabled;
     self.placeholderLabel.enabled = _enabled;
-    self.datePicker.enabled = _enabled;
+    self.pickerView.userInteractionEnabled = _enabled;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    if ([object isKindOfClass:[REDateTimeItem class]] && [keyPath isEqualToString:@"enabled"]) {
+    if ([object isKindOfClass:[REPickerItem class]] && [keyPath isEqualToString:@"enabled"]) {
         BOOL newValue = [[change objectForKey: NSKeyValueChangeNewKey] boolValue];
         
         self.enabled = newValue;
@@ -215,6 +217,7 @@
 {
     if (!self.selected)
         [self setSelected:YES animated:NO];
+    
     NSIndexPath *indexPath = [self indexPathForNextResponder];
     if (indexPath) {
         textField.returnKeyType = UIReturnKeyNext;
@@ -230,22 +233,41 @@
 {
     [self setSelected:NO animated:NO];
     [self.item deselectRowAnimated:NO];
-    self.item.value = self.datePicker.date;
-    self.dateLabel.text = [self.dateFormatter stringFromDate:self.item.value];
-    self.placeholderLabel.hidden = self.dateLabel.text.length > 0;
+    [self shouldUpdateItemValue];
     return YES;
 }
 
 #pragma mark -
-#pragma mark Date picker value
+#pragma mark UIPickerViewDataSource
 
-- (void)datePickerValueDidChange:(UIDatePicker *)datePicker
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
 {
-    self.item.value = self.datePicker.date;
-    self.dateLabel.text = [self.dateFormatter stringFromDate:self.item.value];
-    self.placeholderLabel.hidden = self.dateLabel.text.length > 0;
+    return self.item.options.count;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
+{
+    return [self.item.options[component] count];
+}
+
+#pragma mark -
+#pragma mark UIPickerViewDelegate
+
+- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
+{
+    NSArray *items = self.item.options[component];
+    return items[row];
+}
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
+{
+    [self shouldUpdateItemValue];
     if (self.item.onChange)
         self.item.onChange(self.item);
+
+    [pickerView reloadAllComponents];
+    [self shouldUpdateItemValue];
+
 }
 
 @end

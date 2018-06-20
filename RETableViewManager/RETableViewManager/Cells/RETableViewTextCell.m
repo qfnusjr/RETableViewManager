@@ -1,5 +1,5 @@
 //
-// RELongTextCell.m
+// RETableViewTextCell.m
 // RETableViewManager
 //
 // Copyright (c) 2013 Roman Efimov (https://github.com/romaonthego)
@@ -23,24 +23,22 @@
 // THE SOFTWARE.
 //
 
-#import "RETableViewLongTextCell.h"
+#import "RETableViewTextCell.h"
 #import "RETableViewManager.h"
 
-@interface RETableViewLongTextCell ()
-
-@property (strong, readwrite, nonatomic) REPlaceholderTextView *textView;
+@interface RETableViewTextCell ()
 
 @property (assign, readwrite, nonatomic) BOOL enabled;
 
 @end
 
-@implementation RETableViewLongTextCell
+@implementation RETableViewTextCell
 
 @synthesize item = _item;
 
-+ (BOOL)canFocusWithItem:(RELongTextItem *)item
++ (BOOL)canFocusWithItem:(RETableViewItem *)item
 {
-    return item.editable;
+    return YES;
 }
 
 #pragma mark -
@@ -57,29 +55,19 @@
     [super cellDidLoad];
     self.textLabel.backgroundColor = [UIColor clearColor];
     
-    self.textView = [[REPlaceholderTextView alloc] init];
-    self.textView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.textView.inputAccessoryView = self.actionBar;
-    self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.textView.backgroundColor = [UIColor clearColor];
-    self.textView.delegate = self;
-    [self.contentView addSubview:self.textView];
-
-    UILabel *label = self.textLabel;
-    
-    CGFloat padding = (self.section.style.contentViewMargin <= 0) ? 7 : 2;
-    NSDictionary *metrics = @{ @"padding": @(padding) };
-    UITextView *textView = self.textView;
-    [self.contentView removeConstraints:self.contentView.constraints];
-    [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[textView]-2-|" options:0 metrics:metrics views:NSDictionaryOfVariableBindings(textView, label)]];
-    [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[textView]-padding-|" options:0 metrics:metrics views:NSDictionaryOfVariableBindings(textView, label)]];
+    self.textField = [[UITextField alloc] initWithFrame:CGRectZero];
+    self.textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    self.textField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.textField.delegate = self;
+    [self.textField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
+    [self.contentView addSubview:self.textField];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
 {
     [super setSelected:selected animated:animated];
     if (selected) {
-        [self.textView becomeFirstResponder];
+        [self.textField becomeFirstResponder];
     }
 }
 
@@ -87,49 +75,45 @@
 {
     [super cellWillAppear];
     self.selectionStyle = UITableViewCellSelectionStyleNone;
-
-    self.textView.editable = self.item.editable;
-    self.textView.inputAccessoryView = self.textView.editable ?  self.actionBar : nil;
     
-    self.textView.text = self.item.value;
-    self.textView.placeholder = self.item.placeholder;
-    self.textView.placeholderColor = self.item.placeholderColor;
-    self.textView.font = [UIFont systemFontOfSize:17];
-    self.textView.autocapitalizationType = self.item.autocapitalizationType;
-    self.textView.autocorrectionType = self.item.autocorrectionType;
-    self.textView.spellCheckingType = self.item.spellCheckingType;
-    self.textView.keyboardType = self.item.keyboardType;
-    self.textView.keyboardAppearance = self.item.keyboardAppearance;
-    self.textView.returnKeyType = self.item.returnKeyType;
-    self.textView.enablesReturnKeyAutomatically = self.item.enablesReturnKeyAutomatically;
-    self.textView.secureTextEntry = self.item.secureTextEntry;
-    [self.textView setNeedsDisplay];
-    
+    self.textLabel.text = self.item.title.length == 0 ? @" " : self.item.title;
+    self.textField.text = self.item.value;
+    self.textField.placeholder = self.item.placeholder;
+    self.textField.font = [UIFont systemFontOfSize:17];
+    self.textField.autocapitalizationType = self.item.autocapitalizationType;
+    self.textField.autocorrectionType = self.item.autocorrectionType;
+    self.textField.spellCheckingType = self.item.spellCheckingType;
+    self.textField.keyboardType = self.item.keyboardType;
+    self.textField.keyboardAppearance = self.item.keyboardAppearance;
+    self.textField.returnKeyType = self.item.returnKeyType;
+    self.textField.enablesReturnKeyAutomatically = self.item.enablesReturnKeyAutomatically;
+    self.textField.secureTextEntry = self.item.secureTextEntry;
+    self.textField.clearButtonMode = self.item.clearButtonMode;
+    self.textField.clearsOnBeginEditing = self.item.clearsOnBeginEditing;
     self.actionBar.barStyle = self.item.keyboardAppearance == UIKeyboardAppearanceAlert ? UIBarStyleBlack : UIBarStyleDefault;
-    
+    self.textField.inputAccessoryView = self.item.showBarView? self.actionBar: nil;   
     self.enabled = self.item.enabled;
 }
 
 - (UIResponder *)responder
 {
-    if (!self.item.editable)
-        return nil;
-    
-    return self.textView;
+    return self.textField;
 }
 
 - (void)layoutSubviews
 {
     [super layoutSubviews];
+    
+    [self layoutDetailView:self.textField minimumWidth:0];
+    
     if ([self.tableViewManager.delegate respondsToSelector:@selector(tableView:willLayoutCellSubviews:forRowAtIndexPath:)])
         [self.tableViewManager.delegate tableView:self.tableViewManager.tableView willLayoutCellSubviews:self forRowAtIndexPath:[self.tableViewManager.tableView indexPathForCell:self]];
 }
 
-
 #pragma mark -
 #pragma mark Handle state
 
-- (void)setItem:(RELongTextItem *)item
+- (void)setItem:(RETextItem *)item
 {
     if (_item != nil) {
         [_item removeObserver:self forKeyPath:@"enabled"];
@@ -146,12 +130,12 @@
     self.userInteractionEnabled = _enabled;
     
     self.textLabel.enabled = _enabled;
-    self.textView.userInteractionEnabled = _enabled;
+    self.textField.enabled = _enabled;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    if ([object isKindOfClass:[RELongTextItem class]] && [keyPath isEqualToString:@"enabled"]) {
+    if ([object isKindOfClass:[RETextItem class]] && [keyPath isEqualToString:@"enabled"]) {
         BOOL newValue = [[change objectForKey: NSKeyValueChangeNewKey] boolValue];
         
         self.enabled = newValue;
@@ -159,10 +143,23 @@
 }
 
 #pragma mark -
-#pragma mark UITextView delegate
+#pragma mark Text field events
 
-- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
+- (void)textFieldDidChange:(UITextField *)textField
 {
+    self.item.value = textField.text;
+    if (self.item.onChange)
+        self.item.onChange(self.item);
+}
+
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
+{
+    NSIndexPath *indexPath = [self indexPathForNextResponder];
+    if (indexPath) {
+        textField.returnKeyType = UIReturnKeyNext;
+    } else {
+        textField.returnKeyType = self.item.returnKeyType;
+    }
     [self updateActionBarNavigationControl];
     [self.parentTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:self.rowIndex inSection:self.sectionIndex] atScrollPosition:UITableViewScrollPositionTop animated:YES];
     if (self.item.onBeginEditing)
@@ -170,31 +167,43 @@
     return YES;
 }
 
-- (BOOL)textViewShouldEndEditing:(UITextView *)textView
+- (BOOL)textFieldShouldEndEditing:(UITextField *)textField
 {
     if (self.item.onEndEditing)
         self.item.onEndEditing(self.item);
     return YES;
 }
 
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    if (self.item.onReturn && [text isEqualToString:@"\n"]) {
-        [textView resignFirstResponder];
-        if (self.item.onReturn)
-            self.item.onReturn(self.item);
-        
-        return NO;
+    if (self.item.onReturn)
+        self.item.onReturn(self.item);
+    if (self.item.onEndEditing)
+        self.item.onEndEditing(self.item);
+    NSIndexPath *indexPath = [self indexPathForNextResponder];
+    if (!indexPath) {
+        [self endEditing:YES];
+        return YES;
     }
-    
+    RETableViewCell *cell = (RETableViewCell *)[self.parentTableView cellForRowAtIndexPath:indexPath];
+    [cell.responder becomeFirstResponder];
     return YES;
 }
 
-- (void)textViewDidChange:(UITextView *)textView
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-    self.item.value = textView.text;
-    if (self.item.onChange)
-        self.item.onChange(self.item);
+    BOOL shouldChange = YES;
+    
+    if (self.item.charactersLimit) {
+        NSUInteger newLength = textField.text.length + string.length - range.length;
+        shouldChange = newLength <= self.item.charactersLimit;
+    }
+    
+    if (self.item.onChangeCharacterInRange && shouldChange)
+        shouldChange = self.item.onChangeCharacterInRange(self.item, range, string);
+    
+    return shouldChange;
 }
+
 
 @end
