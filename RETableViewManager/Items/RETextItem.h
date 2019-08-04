@@ -39,6 +39,9 @@
 
 @property (assign, readwrite, nonatomic) NSUInteger charactersLimit;                   // characters limit
 
+@property (copy, readwrite, nonatomic) UIColor *textBackgroundColor;
+@property (copy, readwrite, nonatomic) UIFont *textFont;
+@property (assign, readwrite, nonatomic) UIEdgeInsets textMarginInsets;
 
 // Keyboard
 //

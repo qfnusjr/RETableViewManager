@@ -80,7 +80,6 @@
     self.textLabel.text = self.item.title.length == 0 ? @" " : self.item.title;
     self.textField.text = self.item.value;
     self.textField.placeholder = self.item.placeholder;
-    self.textField.font = [UIFont systemFontOfSize:17];
     self.textField.autocapitalizationType = self.item.autocapitalizationType;
     self.textField.autocorrectionType = self.item.autocorrectionType;
     self.textField.spellCheckingType = self.item.spellCheckingType;
@@ -91,7 +90,17 @@
     self.textField.secureTextEntry = self.item.secureTextEntry;
     self.textField.clearButtonMode = self.item.clearButtonMode;
     self.textField.clearsOnBeginEditing = self.item.clearsOnBeginEditing;
-    
+
+    if (self.item.textBackgroundColor) {
+        self.textField.backgroundColor = self.item.textBackgroundColor;
+    }
+
+    if (self.item.textFont) {
+        self.textField.font = self.item.textFont;
+    } else {
+        self.textField.font = [UIFont systemFontOfSize:17];
+    }
+
     self.actionBar.barStyle = self.item.keyboardAppearance == UIKeyboardAppearanceAlert ? UIBarStyleBlack : UIBarStyleDefault;
     
     self.enabled = self.item.enabled;
@@ -107,7 +116,16 @@
     [super layoutSubviews];
     
     [self layoutDetailView:self.textField minimumWidth:0];
-    
+    if (!UIEdgeInsetsEqualToEdgeInsets(self.item.textMarginInsets, UIEdgeInsetsZero)) {
+        UIEdgeInsets margin = self.item.textMarginInsets;
+        CGRect frame = self.textField.frame;
+        frame.origin.x += margin.left;
+        frame.origin.y += margin.top;
+        frame.size.width -= (margin.left + margin.right);
+        frame.size.height -= (margin.top + margin.bottom);
+        self.textField.frame = frame;
+    }
+
     if ([self.tableViewManager.delegate respondsToSelector:@selector(tableView:willLayoutCellSubviews:forRowAtIndexPath:)])
         [self.tableViewManager.delegate tableView:self.tableViewManager.tableView willLayoutCellSubviews:self forRowAtIndexPath:[self.tableViewManager.tableView indexPathForCell:self]];
 }
