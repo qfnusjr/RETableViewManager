@@ -57,7 +57,8 @@
     [super cellDidLoad];
     self.selectionStyle = UITableViewCellSelectionStyleNone;
     self.textLabel.backgroundColor = [UIColor clearColor];
-    
+
+    self.textField.hidden = YES;
     self.textFieldNumber = [[REFormattedNumberField alloc] initWithFrame:CGRectZero];
     self.textFieldNumber.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     self.textFieldNumber.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -74,16 +75,37 @@
     self.textFieldNumber.text = [self.item.value re_stringWithNumberFormat:self.item.format];
     self.textFieldNumber.placeholder = self.item.placeholder;
     self.textFieldNumber.format = self.item.format;
-    self.textFieldNumber.font = [UIFont systemFontOfSize:17];
     self.textFieldNumber.keyboardAppearance = self.item.keyboardAppearance;
     self.textFieldNumber.keyboardType = UIKeyboardTypeNumberPad;
     self.textFieldNumber.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
     self.enabled = self.item.enabled;
+
+    if (self.item.textBackgroundColor) {
+        self.textFieldNumber.backgroundColor = self.item.textBackgroundColor;
+    }
+
+    if (self.item.textFont) {
+        self.textFieldNumber.font = self.item.textFont;
+    } else {
+        self.textFieldNumber.font = [UIFont systemFontOfSize:17];
+    }
 }
 
 - (void)layoutSubviews
 {
     [super layoutSubviews];
+
+    [self layoutDetailView:self.textFieldNumber minimumWidth:0];
+    if (!UIEdgeInsetsEqualToEdgeInsets(self.item.textMarginInsets, UIEdgeInsetsZero)) {
+        UIEdgeInsets margin = self.item.textMarginInsets;
+        CGRect frame = self.textField.frame;
+        frame.origin.x += margin.left;
+        frame.origin.y += margin.top;
+        frame.size.width -= (margin.left + margin.right);
+        frame.size.height -= (margin.top + margin.bottom);
+        self.textFieldNumber.frame = frame;
+    }
+
     if ([self.tableViewManager.delegate respondsToSelector:@selector(tableView:willLayoutCellSubviews:forRowAtIndexPath:)])
         [self.tableViewManager.delegate tableView:self.tableViewManager.tableView willLayoutCellSubviews:self forRowAtIndexPath:[self.tableViewManager.tableView indexPathForCell:self]];
 }
