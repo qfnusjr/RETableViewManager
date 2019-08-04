@@ -42,6 +42,8 @@
 @property (assign, readwrite, nonatomic) UITableViewCellAccessoryType accessoryType;
 @property (assign, readwrite, nonatomic) UITableViewCellEditingStyle editingStyle;
 @property (strong, readwrite, nonatomic) UIView *accessoryView;
+// 是否显示输入框的 键盘上方的barview （默认不显示）
+@property (assign, readwrite, nonatomic) BOOL showBarView;
 @property (assign, readwrite, nonatomic) BOOL enabled;
 @property (copy, readwrite, nonatomic) void (^selectionHandler)(id item);
 @property (copy, readwrite, nonatomic) void (^accessoryButtonTapHandler)(id item);

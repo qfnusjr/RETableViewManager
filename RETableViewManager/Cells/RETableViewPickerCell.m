@@ -63,7 +63,6 @@
     
     self.textField = [[UITextField alloc] initWithFrame:CGRectZero];
     self.textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    self.textField.inputAccessoryView = self.actionBar;
     self.textField.delegate = self;
     [self addSubview:self.textField];
     
@@ -98,7 +97,8 @@
     self.valueLabel.text = self.item.value ? [self.item.value componentsJoinedByString:@", "] : @"";
     self.placeholderLabel.text = self.item.placeholder;
     self.placeholderLabel.hidden = self.valueLabel.text.length > 0;
-    
+    self.textField.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
+
     if (!self.item.title) {
         self.valueLabel.textAlignment = NSTextAlignmentLeft;
     }

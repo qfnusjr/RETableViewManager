@@ -63,7 +63,6 @@
     
     self.textField = [[UITextField alloc] initWithFrame:CGRectZero];
     self.textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    self.textField.inputAccessoryView = self.actionBar;
     self.textField.delegate = self;
     [self addSubview:self.textField];
     
@@ -93,6 +92,7 @@
 {
     self.textLabel.text = self.item.title.length == 0 ? @" " : self.item.title;
     self.textField.inputView = self.datePicker;
+    self.textField.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
     self.datePicker.date = self.item.value ? self.item.value : (self.item.pickerStartDate ? self.item.pickerStartDate : [NSDate date]);
     self.datePicker.datePickerMode = self.item.datePickerMode;
     self.datePicker.locale = self.item.locale;

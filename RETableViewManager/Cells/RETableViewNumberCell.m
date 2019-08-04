@@ -60,7 +60,6 @@
     
     self.textFieldNumber = [[REFormattedNumberField alloc] initWithFrame:CGRectZero];
     self.textFieldNumber.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    self.textFieldNumber.inputAccessoryView = self.actionBar;
     self.textFieldNumber.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.textFieldNumber.delegate = self;
     [self.textFieldNumber addTarget:self action:@selector(textFieldNumberDidChange:) forControlEvents:UIControlEventEditingChanged];
@@ -78,7 +77,7 @@
     self.textFieldNumber.font = [UIFont systemFontOfSize:17];
     self.textFieldNumber.keyboardAppearance = self.item.keyboardAppearance;
     self.textFieldNumber.keyboardType = UIKeyboardTypeNumberPad;
-    
+    self.textFieldNumber.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
     self.enabled = self.item.enabled;
 }
 

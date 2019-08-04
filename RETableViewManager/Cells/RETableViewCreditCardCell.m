@@ -142,7 +142,6 @@ static inline RECreditCardType RECreditCardTypeFromNumber(NSString *creditCardNu
     self.creditCardField = [[REFormattedNumberField alloc] initWithFrame:CGRectMake(0, 0, 216, self.frame.size.height - self.textFieldPositionOffset.height)];
     self.creditCardField.tag = 0;
     self.creditCardField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    self.creditCardField.inputAccessoryView = self.actionBar;
     self.creditCardField.delegate = self;
     self.creditCardField.placeholder = @"1234 1234 1234 1234";
     self.creditCardField.format = @"XXXX XXXX XXXX XXXX";
@@ -153,7 +152,6 @@ static inline RECreditCardType RECreditCardTypeFromNumber(NSString *creditCardNu
     self.expirationDateField = [[REFormattedNumberField alloc] initWithFrame:CGRectMake(320, 0, 80, self.frame.size.height)];
     self.expirationDateField.tag = 1;
     self.expirationDateField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    self.expirationDateField.inputAccessoryView = self.actionBar;
     self.expirationDateField.format = @"XX/XX";
     self.expirationDateField.placeholder = @"MM/YY";
     self.expirationDateField.delegate = self;
@@ -163,7 +161,6 @@ static inline RECreditCardType RECreditCardTypeFromNumber(NSString *creditCardNu
     self.cvvField = [[REFormattedNumberField alloc] initWithFrame:CGRectMake(320, 0, 60, self.frame.size.height)];
     self.cvvField.tag = 2;
     self.cvvField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    self.cvvField.inputAccessoryView = self.actionBar;
     self.cvvField.format = @"XXX";
     self.cvvField.placeholder = @"CVV";
     self.cvvField.delegate = self;
@@ -213,6 +210,10 @@ static inline RECreditCardType RECreditCardTypeFromNumber(NSString *creditCardNu
     self.ribbonExpired.image = self.item.expiredRibbonImage;
     self.ribbonExpired.hidden = !RECreditCardExpired(self.expirationDateField.text);
 
+    self.creditCardField.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
+    self.expirationDateField.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
+    self.cvvField.inputAccessoryView = self.item.showBarView? self.actionBar: nil;
+    
     if (self.item.creditCardType != RECreditCardTypeUnknown ) {
         self.creditCardImageView.image = [UIImage imageNamed:creditCardTypeImage[self.item.creditCardType] inBundle:[NSBundle RETableViewManagerBundle] compatibleWithTraitCollection:nil];
         [UIView transitionFromView:self.creditCardStackImageView toView:self.creditCardImageView duration:0.4 options:UIViewAnimationOptionTransitionFlipFromLeft completion:nil];

@@ -1,3 +1,4 @@
+
 //
 // RETableViewCell.m
 // RETableViewManager
@@ -79,7 +80,7 @@
 - (void)cellDidLoad
 {
     self.loaded = YES;
-    self.actionBar = [[REActionBar alloc] initWithDelegate:self];
+    
     self.selectionStyle = self.tableViewManager.style.defaultCellSelectionStyle;
     
     if ([self.tableViewManager.style hasCustomBackgroundImage]) {
@@ -111,6 +112,8 @@
             self.selectionStyle = item.selectionStyle;
         self.imageView.image = item.image;
         self.imageView.highlightedImage = item.highlightedImage;
+        self.actionBar = self.item.showBarView?[[REActionBar alloc] initWithDelegate:self]: nil;
+
     }
     if (self.textLabel.text.length == 0)
         self.textLabel.text = @" ";
