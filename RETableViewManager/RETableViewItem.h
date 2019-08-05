@@ -31,6 +31,7 @@
 
 @interface RETableViewItem : NSObject
 
+@property (strong, readwrite, nonatomic) UIColor *backgourndColor;
 @property (copy, readwrite, nonatomic) NSString *title;
 @property (strong, readwrite, nonatomic) UIImage *image;
 @property (strong, readwrite, nonatomic) UIImage *highlightedImage;

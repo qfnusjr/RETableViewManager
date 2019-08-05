@@ -113,7 +113,9 @@
         self.imageView.image = item.image;
         self.imageView.highlightedImage = item.highlightedImage;
         self.actionBar = self.item.showBarView?[[REActionBar alloc] initWithDelegate:self]: nil;
-
+        if (self.item.backgourndColor) {
+            self.contentView.backgroundColor = self.item.backgourndColor;
+        }
     }
     if (self.textLabel.text.length == 0)
         self.textLabel.text = @" ";
