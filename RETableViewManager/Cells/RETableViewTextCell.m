@@ -89,6 +89,7 @@
     self.textField.secureTextEntry = self.item.secureTextEntry;
     self.textField.clearButtonMode = self.item.clearButtonMode;
     self.textField.clearsOnBeginEditing = self.item.clearsOnBeginEditing;
+    self.textField.textContentType = self.item.textContentType;
 
     if (self.item.textBackgroundColor) {
         self.textField.backgroundColor = self.item.textBackgroundColor;

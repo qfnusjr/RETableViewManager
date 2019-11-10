@@ -42,6 +42,7 @@
 @property (copy, readwrite, nonatomic) UIColor *textBackgroundColor;
 @property (copy, readwrite, nonatomic) UIFont *textFont;
 @property (assign, readwrite, nonatomic) UIEdgeInsets textMarginInsets;
+@property (copy, readwrite, nonatomic) UITextContentType textContentType;
 
 // Keyboard
 //
