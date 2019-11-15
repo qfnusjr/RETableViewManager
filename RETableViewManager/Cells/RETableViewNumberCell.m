@@ -56,6 +56,11 @@
 - (void)cellDidLoad
 {
     [super cellDidLoad];
+    
+    for (UIView *view in self.contentView.subviews) {
+        [view removeFromSuperview];
+    }
+    
     self.selectionStyle = UITableViewCellSelectionStyleNone;
     self.textLabel.backgroundColor = [UIColor clearColor];
 
