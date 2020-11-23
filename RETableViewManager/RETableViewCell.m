@@ -81,7 +81,7 @@
 {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
-        self.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 0);
+        self.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 44);
     }
     return self;
 }
