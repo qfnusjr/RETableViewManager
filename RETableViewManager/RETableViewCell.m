@@ -77,6 +77,15 @@
 #pragma mark -
 #pragma mark Cell life cycle
 
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        self.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 0);
+    }
+    return self;
+}
+
 - (void)cellDidLoad
 {
     self.loaded = YES;
